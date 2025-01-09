@@ -5,10 +5,10 @@ import { SERVER_URL } from "../global";
 import BackButton from "../component/BackButton";
 import { useSnackbar } from "notistack";
 const CreateBooks = () => {
+  const [base64Image, setBase64Image] = useState("");
   const [title, settitle] = useState("");
   const [publishYear, setpublishYear] = useState("");
   const [author, setauthor] = useState("");
-  const [image, setimage] = useState(null);
   const navigate = useNavigate();
   const { enqueueSnackbar } = useSnackbar();
   const token = localStorage.getItem("token");
@@ -18,12 +18,11 @@ const CreateBooks = () => {
       title,
       author,
       publishYear,
-      image,
+      image: base64Image,
     };
     axios
       .post(`${SERVER_URL}/book`, data, {
         headers: {
-          "Content-Type": "multipart/form-data",
           Authorization: `Bearer ${token}`,
         },
       })
@@ -35,6 +34,19 @@ const CreateBooks = () => {
         console.log(error);
       });
   };
+
+  const handleFileUpload = (event) => {
+    const file = event.target.files[0];
+
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setBase64Image(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="p-4">
       <BackButton />
@@ -76,7 +88,7 @@ const CreateBooks = () => {
             type="file"
             id="image"
             className="form-control"
-            onChange={(e) => setimage(e.target.files[0])}
+            onChange={handleFileUpload}
           />
         </div>
         <button className="btn btn-primary btn-lg" onClick={handleSubmit}>
